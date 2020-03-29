@@ -11,7 +11,8 @@
 #
 # Happy Coding!
 
-service: lambdatest
+service: ${self:custom.config.SERVICE_NAME}
+
 # app and org for use with dashboard.serverless.com
 app: myapp
 org: brchen777
@@ -38,6 +39,10 @@ provider:
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1
+
+custom:
+    default_stage: local
+    config: ${file(./serverless.config.${opt:stage, self:custom.default_stage}.json)}
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -96,6 +101,13 @@ functions:
                   path: stepFunction
                   method: delete
 
+    testRestartExecution:
+        handler: handler.testRestartExecution
+        events:
+            - http:
+                  path: testRestartExecution
+                  method: post
+
     printHello:
         handler: trigger.printHello
 
@@ -115,7 +127,7 @@ stepFunctions:
                 States:
                     WaitState:
                         Type: Wait
-                        Seconds: 30
+                        Seconds: 20
                         Next: PrintHello
                     PrintHello:
                         Type: Task
@@ -131,7 +143,7 @@ stepFunctions:
                     ConfigureCount:
                         Type: Pass
                         Result:
-                            count: 100
+                            count: ${self:custom.config.STEP_FUNCTION_MAX_COUNT}
                             index: -1
                             step: 1
                         ResultPath: "$.iterator"
@@ -165,6 +177,7 @@ stepFunctions:
                     Restart:
                         Type: Task
                         Resource: !GetAtt restartExecution.Arn
+                        # arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-restartExecution
                         Next: Done
                     Done:
                         Type: Pass

@@ -29,14 +29,21 @@ function errorLog() {
 
 async function createStepFunction() {
     const randomBase64Str = cryptoRandomString({ length: 10, type: 'base64' });
-    const { executionArn } = await stepFunction.invoke('helloFunction', { randomBase64Str });
-    console.log(`randomBase64Str: ${randomBase64Str}, executionArn: ${executionArn}`);
+    const randomRunIdx = Math.floor(Math.random() * 10) + 1;
+
+    const executionArns = [];
+    for (let i = 1; i <= randomRunIdx; i++) {
+        const { executionArn } = await stepFunction.invoke('helloFunction', { randomBase64Str, i });
+        console.log(`randomBase64Str: ${randomBase64Str}, runIndex: ${i}, executionArn: ${executionArn}`);
+        executionArns.push(executionArn);
+    }
     return {
         statusCode: 201,
         body: JSON.stringify({
             msg: 'createStepFunction',
             randomBase64Str,
-            executionArn,
+            randomRunIdx,
+            executionArns,
             time: moment().format(),
         }),
     };
@@ -58,37 +65,19 @@ async function deleteStepFunction(event) {
     };
 }
 
-async function iterator(event) {
-    let index = event.iterator.index;
-    let step = event.iterator.step;
-    let count = event.iterator.count;
+async function testRestartExecution(event) {
+    const randomBase64Str = cryptoRandomString({ length: 10, type: 'base64' });
+    const randomRunIdx = Math.floor(Math.random() * 10) + 1;
 
-    index += step;
+    const { executionArn } = await stepFunction.invoke('restart', { randomBase64Str });
     return {
-        statusCode: 200,
+        statusCode: 201,
         body: JSON.stringify({
-            msg: 'iterator',
-            result: {
-                index,
-                step,
-                count,
-                continue: index < count,
-            },
-        }),
-    };
-}
-
-async function restartExecution(event) {
-    let stateMachineArn = event.restart.StateMachineArn;
-    event.restart.executionCount -= 1;
-    event = JSON.stringify(event);
-    const result = await stepFunction.startExecution(event, stateMachineArn);
-    return {
-        statusCode: 200,
-        body: JSON.stringify({
-            msg: 'restart',
+            msg: 'testRestartExecution',
+            randomBase64Str,
+            randomRunIdx,
+            executionArn,
             time: moment().format(),
-            result,
         }),
     };
 }
@@ -98,6 +87,5 @@ module.exports = {
     errorLog,
     createStepFunction,
     deleteStepFunction,
-    iterator,
-    restartExecution,
+    testRestartExecution
 };

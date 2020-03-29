@@ -1,0 +1,4 @@
+{
+    "SERVICE_NAME": "lambdatest",
+    "STEP_FUNCTION_MAX_COUNT": 15
+}
