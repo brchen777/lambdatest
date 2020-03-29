@@ -27,7 +27,7 @@ async function restartExecution(event, context, callback) {
     // TODO: 看能不能 refactor
     let params = {
         input: event,
-        stateMachineArn: StateMachineArn
+        stateMachineArn
     };
 
     sfn.startExecution(params, function(err, data) {
