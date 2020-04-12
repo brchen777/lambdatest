@@ -3,10 +3,9 @@ const stepFunction = require('./stepFunction');
 const aws = require('aws-sdk');
 const sfn = new aws.StepFunctions();
 
-function printHello(event) {
-    const { randomBase64Str } = event;
-    console.log(JSON.stringify({ msg: "printHello", randomBase64Str }));
-    return randomBase64Str;
+function printHello(event, context, callback) {
+    // console.log('event:', { msg: "printHello", ...event });
+    callback(null, event);
 }
 
 function iterator(event, context, callback) {

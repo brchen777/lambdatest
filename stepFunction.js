@@ -1,8 +1,9 @@
 const AWS = require('aws-sdk');
+const config = require('./serverless.config.dev.json');
 
 class StepFunctionInvoker {
     constructor() {
-        this.region = 'us-east-1';
+        this.region = config.REGION;
         this.stepFunctions = new AWS.StepFunctions({
             region: this.region,
         });
@@ -35,7 +36,10 @@ class StepFunctionInvoker {
                 stateMachineArn: arn,
                 input: JSON.stringify(data),
             }))
-            .then(params => this.stepFunctions.startExecution(params).promise());
+            .then(params => this.stepFunctions.startExecution(params).promise())
+            .catch((error) => {
+                console.log(error);
+            });
     }
 
     cancelInvoke(stepFunctionName, arnId) {

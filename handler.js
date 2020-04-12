@@ -3,6 +3,8 @@ const moment = require('moment');
 const cryptoRandomString = require('crypto-random-string');
 const stepFunction = require('./stepFunction');
 
+const maxStepFunctionCnt = 25000;
+
 function successLog() {
     const randomNumStr = cryptoRandomString({ length: 10, type: 'numeric' });
     return {
@@ -66,17 +68,32 @@ async function deleteStepFunction(event) {
 }
 
 async function testRestartExecution(event) {
+    const { maxCnt = 100 } = JSON.parse(event.body);
     const randomBase64Str = cryptoRandomString({ length: 10, type: 'base64' });
-    const randomRunIdx = Math.floor(Math.random() * 10) + 1;
-
-    const { executionArn } = await stepFunction.invoke('restart', { randomBase64Str });
+    // const randomRunIdx = Math.floor(Math.random() * 10) + 1;
+    // const { executionArn } = await stepFunction.invoke('restart', { randomBase64Str });
+    
+    const promises = [];
+    const executionArns = [];
+    for (let i = 0; i < maxCnt; i++) {
+        promises.push(stepFunction.invoke('helloFunction', { randomBase64Str, i }));
+    }
+    await Promise.allSettled(promises).then(results => results.forEach((result, i) => {
+        if (result.status === 'rejected') {
+            console.error(result.reason);
+        }
+        else {
+            const { executionArn } = result.value;
+            // console.log(`randomBase64Str: ${randomBase64Str}, runIndex: ${i}, executionArn: ${executionArn}`);
+            executionArns.push(executionArn);
+        }
+    }))
     return {
         statusCode: 201,
         body: JSON.stringify({
             msg: 'testRestartExecution',
             randomBase64Str,
-            randomRunIdx,
-            executionArn,
+            executionArns,
             time: moment().format(),
         }),
     };

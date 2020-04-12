@@ -24,7 +24,7 @@ org: brchen777
 provider:
     name: aws
     runtime: nodejs12.x
-    # region: ap-northeast-1
+    region: ${self:custom.config.REGION}
     # 不知道 cfnRole: arn:aws:iam::754952574167:role/cfn-Role
     iamRoleStatements:
         - Effect: Allow
@@ -127,7 +127,7 @@ stepFunctions:
                 States:
                     WaitState:
                         Type: Wait
-                        Seconds: 20
+                        Seconds: 10
                         Next: PrintHello
                     PrintHello:
                         Type: Task
