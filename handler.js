@@ -5,7 +5,7 @@ const stepFunction = require('./stepFunction');
 
 const maxStepFunctionCnt = 25000;
 
-function successLog() {
+async function successLog() {
     const randomNumStr = cryptoRandomString({ length: 10, type: 'numeric' });
     return {
         statusCode: 200,
@@ -16,7 +16,7 @@ function successLog() {
     };
 }
 
-function errorLog() {
+async function errorLog() {
     const randomNumStr = cryptoRandomString({ length: 10, type: 'numeric' });
     const randomBase64Str = cryptoRandomString({ length: 10, type: 'base64' });
     return {
